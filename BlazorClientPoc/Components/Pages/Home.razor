@@ -1,0 +1,125 @@
+﻿@page "/"
+@using Blazing.Mvvm.Components
+@using Finbuckle.MultiTenant;
+@using Microsoft.EntityFrameworkCore
+@using BlazorAppPoc.Contexts;
+@using BlazorAppPoc.Interfaces
+@using BlazorAppPoc.Models;
+@using BlazorAppPoc.Models.ViewModels
+@using BlazorAppPoc.Services;
+@using System.Security.Claims;
+@rendermode InteractiveServer
+@inject PocViewModel ViewModel
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject ContextService ctxservice
+@inject IHttpContextAccessor context
+
+
+
+
+
+<PageTitle>Home</PageTitle>
+
+
+<AuthorizeView>
+    <NotAuthorized>
+        <p>You are not logged in. Please login to access customer information.</p>
+    </NotAuthorized>
+    <Authorized>
+       
+        <button class="btn btn-success" onclick="@OnGet">Open Profile</button>
+        @if (flag)
+        {
+            <h2>User Profile</h2>
+            <div>
+                <p><strong>Name:</strong>@ViewModel.User.FirstName</p>
+                <p><strong>Email:</strong>@ViewModel.User.Email </p>
+            </div>           
+        }
+        
+        @foreach (Todo item in todos)
+            {
+                <p>@item.Title + @item.Description</p>          
+            }
+
+        
+
+       
+ 
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Claim Type</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var claim in context.User.Claims)
+                {
+                    <tr>
+                        <td>@claim.Type</td>
+                        <td>@claim.Value</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+      
+
+        <iframe title="Sample Report Demo" width="1140" height="541.25" src="https://playground.powerbi.com/sampleReportEmbed" frameborder="0" allowFullScreen="true"></iframe>
+        
+    </Authorized>
+</AuthorizeView>
+
+
+
+
+@code{
+    public string tenantName { get; set; }
+
+    private User user {get; set;}
+
+    private string claim { get; set; }
+
+    private List<Todo> todos { get; set; }
+    //private TenantInfo tenantInfo { get; set; }
+
+    private bool flag { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+
+
+
+        todos = await ctxservice.GetTodos();
+
+
+
+    }
+
+
+    public async void OnGet()
+    {
+        var tenant = context.HttpContext;
+        var blah = tenant.GetMultiTenantContext<TenantInfo>().TenantInfo;
+        await ViewModel.SetUser();
+        flag = true;
+    }
+
+
+
+    private void SetTennant()
+    {
+        //var tenantInfo = httpContextAccessor.HttpContext.GetMultiTenantContext<TenantInfo>().TenantInfo;
+        // if (tenantInfo != null)
+        // {
+        //     var tenantId = tenantInfo.Id;
+        //     var identifier = tenantInfo.Identifier;
+        //     var name = tenantInfo.Name;
+        // }
+    }
+    private  async Task<IEnumerable<Todo>> GetAllTodos(){
+        
+        return await ctxservice.GetTodos();
+    }
+ }
