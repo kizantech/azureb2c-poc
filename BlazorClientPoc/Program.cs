@@ -6,8 +6,12 @@ using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using BlazorAppPoc.Components;
 using BlazorAppPoc.Contexts;
+using BlazorAppPoc.Middleware;
 using BlazorAppPoc.Models.ViewModels;
+using BlazorAppPoc.Multitenant;
 using BlazorAppPoc.Services;
+using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
@@ -17,6 +21,10 @@ builder.Services.AddDbContext<PocDbContext>();
 builder.Services.AddScoped<ContextService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<TenantInfo>();
+builder.Services.AddScoped<UserService>();
+builder.Services.TryAddEnumerable(
+    ServiceDescriptor.Scoped<CircuitHandler, UserCircuitHandler>());
+
 builder.Services.AddTransient<PocViewModel>();
 
 builder.Services.AddMvvmNavigation(options =>
@@ -36,7 +44,8 @@ builder.Services.AddControllersWithViews()
     .AddMicrosoftIdentityUI();
 
 builder.Services.AddMultiTenant<TenantInfo>()
-    .WithClaimStrategy(builder.Configuration["ClaimSettings:TenantIdClaimType"])
+    //.WithClaimStrategy(builder.Configuration["ClaimSettings:TenantIdClaimType"])
+    .WithStrategy<BlazorUserStrategy>(ServiceLifetime.Scoped, [])
     .WithConfigurationStore();
 
 var app = builder.Build();
@@ -48,12 +57,13 @@ if (!app.Environment.IsDevelopment())
 }
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseMultiTenant();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.UseAntiforgery();
+app.UseMiddleware<UserServiceMiddleware>();
+app.UseMultiTenant();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 app.Run();

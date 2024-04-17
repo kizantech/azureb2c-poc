@@ -21,7 +21,7 @@ namespace BlazorAppPoc.Models.ViewModels
         
         public async Task SetUser()
         {
-           User = await _userService.setUser(User);
+           User = await _userService.SetUser(User);
         }
     }
 }
