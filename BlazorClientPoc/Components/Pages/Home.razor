@@ -1,51 +1,35 @@
 ﻿@page "/"
-@using Blazing.Mvvm.Components
-@using Finbuckle.MultiTenant;
 @using Microsoft.EntityFrameworkCore
 @using BlazorAppPoc.Contexts;
-@using BlazorAppPoc.Interfaces
 @using BlazorAppPoc.Models;
-@using BlazorAppPoc.Models.ViewModels
-@using BlazorAppPoc.Services;
 @using System.Security.Claims;
+@using BlazorAppPoc.Services
 @rendermode InteractiveServer
-@inject PocViewModel ViewModel
 @inject AuthenticationStateProvider authenticationStateProvider
-@inject ContextService ctxservice
 @inject IHttpContextAccessor context
-
-
-
-
+@inject PocDbContext DbContext
+@inject UserService UserService
 
 <PageTitle>Home</PageTitle>
-
-
 <AuthorizeView>
     <NotAuthorized>
         <p>You are not logged in. Please login to access customer information.</p>
     </NotAuthorized>
     <Authorized>
-       
         <button class="btn btn-success" onclick="@OnGet">Open Profile</button>
         @if (flag)
         {
             <h2>User Profile</h2>
             <div>
-                <p><strong>Name:</strong>@ViewModel.User.FirstName</p>
-                <p><strong>Email:</strong>@ViewModel.User.Email </p>
+                <p><strong>Name:</strong>@User.FirstName</p>
+                <p><strong>Email:</strong>@User.Email </p>
             </div>           
         }
         
-        @foreach (Todo item in todos)
-            {
-                <p>@item.Title + @item.Description</p>          
-            }
-
-        
-
-       
- 
+        @foreach (var item in ToDos)
+        {
+            <p>@item.Title + @item.Description</p>          
+        }
         <table class="table">
             <thead>
                 <tr>
@@ -63,56 +47,46 @@
                 }
             </tbody>
         </table>
-      
-
         <iframe title="Sample Report Demo" width="1140" height="541.25" src="https://playground.powerbi.com/sampleReportEmbed" frameborder="0" allowFullScreen="true"></iframe>
-        
     </Authorized>
 </AuthorizeView>
 
-
-
-
 @code{
-    public string tenantName { get; set; }
-
-    private User user {get; set;}
-
-    private string claim { get; set; }
-
-    private List<Todo> todos { get; set; }
-    //private TenantInfo tenantInfo { get; set; }
-
-    private bool flag { get; set; }
-
+    public bool flag;
+    public bool Busy { get; set; }
+    public User User { get; set; }
+    public List<ToDo> ToDos { get; set; }
+    
     protected override async Task OnInitializedAsync()
     {
-        todos = await ctxservice.GetTodos();
-    }
+        Busy = true;
 
+        try
+        {
+            ToDos = await DbContext.Todos.ToListAsync();
+        }
+        finally
+        {
+            Busy = false;
+        }
+
+        await base.OnInitializedAsync();
+    }
 
     public async void OnGet()
     {
-        var tenant = context.HttpContext;
-        var blah = tenant.GetMultiTenantContext<TenantInfo>().TenantInfo;
-        await ViewModel.SetUser();
+        var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+        if (authState?.User?.Identity?.IsAuthenticated == true)
+        {
+            var claimsUser = UserService.GetUser();
+            User = new User()
+            {
+                Email = claimsUser.FindFirst(c => c.Type == "emails")?.Value,
+                FirstName = claimsUser.FindFirst(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname")?.Value,
+                LastName = claimsUser.FindFirst(c => c.Type == ClaimTypes.Surname)?.Value,
+                Identityprovider = claimsUser.FindFirst(c => c.Type == "http://schemas.microsoft.com/identity/claims/identityprovider")?.Value
+            };
+        }
         flag = true;
-    }
-
-
-
-    private void SetTennant()
-    {
-        //var tenantInfo = httpContextAccessor.HttpContext.GetMultiTenantContext<TenantInfo>().TenantInfo;
-        // if (tenantInfo != null)
-        // {
-        //     var tenantId = tenantInfo.Id;
-        //     var identifier = tenantInfo.Identifier;
-        //     var name = tenantInfo.Name;
-        // }
-    }
-    private  async Task<IEnumerable<Todo>> GetAllTodos(){
-        
-        return await ctxservice.GetTodos();
     }
  }

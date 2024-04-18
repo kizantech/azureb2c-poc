@@ -1,4 +1,5 @@
-﻿using BlazorAppPoc.Services;
+﻿using System.Security.Claims;
+using BlazorAppPoc.Services;
 using Finbuckle.MultiTenant;
 
 namespace BlazorAppPoc.Multitenant;

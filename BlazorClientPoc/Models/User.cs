@@ -12,7 +12,5 @@ namespace BlazorAppPoc.Models
         private string _email;
         [ObservableProperty]
         private string _identityprovider;
-        [ObservableProperty]
-        private List<Todo> _toDos; 
     }
 }

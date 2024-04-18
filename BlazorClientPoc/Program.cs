@@ -7,7 +7,6 @@ using Microsoft.Identity.Web.UI;
 using BlazorAppPoc.Components;
 using BlazorAppPoc.Contexts;
 using BlazorAppPoc.Middleware;
-using BlazorAppPoc.Models.ViewModels;
 using BlazorAppPoc.Multitenant;
 using BlazorAppPoc.Services;
 using Microsoft.AspNetCore.Components.Server.Circuits;
@@ -18,14 +17,11 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddMicrosoftIdentityConsentHandler();
 builder.Services.AddDbContext<PocDbContext>();
-builder.Services.AddScoped<ContextService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<TenantInfo>();
 builder.Services.AddScoped<UserService>();
 builder.Services.TryAddEnumerable(
     ServiceDescriptor.Scoped<CircuitHandler, UserCircuitHandler>());
-
-builder.Services.AddTransient<PocViewModel>();
 
 builder.Services.AddMvvmNavigation(options =>
 {

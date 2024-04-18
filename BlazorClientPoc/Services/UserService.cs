@@ -1,45 +1,21 @@
-﻿using Finbuckle.MultiTenant;
-using Microsoft.AspNetCore.Components.Authorization;
+﻿using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
-using BlazorAppPoc.Models;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 
 namespace BlazorAppPoc.Services
 {
     public class UserService
     {
-        private ClaimsPrincipal currentUser = new(new ClaimsIdentity());
+        private ClaimsPrincipal? _currentUser;
         
-        private readonly AuthenticationStateProvider _stateProvider;
-        public UserService(AuthenticationStateProvider stateProvider) 
-        {            
-            _stateProvider = stateProvider;
-        }
-
-        public ClaimsPrincipal GetUser()
+        public ClaimsPrincipal? GetUser()
         {
-            return currentUser;
+            return _currentUser;
         }
 
         internal void SetUser(ClaimsPrincipal user)
         {
-            if (currentUser != user)
-                currentUser = user;
-        }
-        
-        [Obsolete]
-        public async Task<User> SetUser(User currentUser) 
-        {
-            var authState = await _stateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
-
-            currentUser.FirstName = user.FindFirst(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname")?.Value;
-            currentUser.LastName= user.FindFirst(c => c.Type == ClaimTypes.Surname)?.Value;
-            currentUser.Identityprovider = user.FindFirst(c => c.Type == "http://schemas.microsoft.com/identity/claims/identityprovider")?.Value;
-            currentUser.Email = user.FindFirst(c => c.Type == "emails")?.Value;
-
-            return currentUser;
+            _currentUser = user;
         }
     }
 
@@ -58,12 +34,13 @@ namespace BlazorAppPoc.Services
         private void AuthenticationChanged(Task<AuthenticationState> task)
         {
             _ = UpdateAuthentication(task);
+            return;
 
-            async Task UpdateAuthentication(Task<AuthenticationState> task)
+            async Task UpdateAuthentication(Task<AuthenticationState> authTask)
             {
                 try
                 {
-                    var state = await task;
+                    var state = await authTask;
                     userService.SetUser(state.User);
                 }
                 catch (Exception e)
