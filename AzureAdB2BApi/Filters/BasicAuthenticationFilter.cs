@@ -12,7 +12,7 @@ namespace AzureAdB2BApi.Filters;
 
 public class BasicAuthenticationFilter : AuthorizationFilterAttribute
 {
-    private const string Realm = "My Realm";
+    private const string Realm = "AzureB2C Demo";
     private readonly ILoginValidation loginValidation;
     public override void OnAuthorization(HttpActionContext actionContext)
     {
@@ -46,5 +46,4 @@ public class BasicAuthenticationFilter : AuthorizationFilterAttribute
             }
         }
     }
-}
 }

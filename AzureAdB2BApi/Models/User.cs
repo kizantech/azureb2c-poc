@@ -2,11 +2,11 @@
 
 public class User
 {
-    private string firstName { get; set; }
-    
-    private string lastName { get; set; }
+    public string firstName { get; set; }
 
-    private string email { get; set; }
+    public string lastName { get; set; }
 
-    private string identityprovider { get; set; }
+    public string email { get; set; }
+
+    public string identityprovider { get; set; }
 }

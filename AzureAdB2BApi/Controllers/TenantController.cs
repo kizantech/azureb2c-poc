@@ -1,6 +1,7 @@
 using AzureAdB2BApi.Filters;
 using AzureAdB2BApi.Interfaces;
 using AzureAdB2BApi.Models;
+using AzureAdB2BApi.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AzureAdB2BApi.Controllers
@@ -10,17 +11,21 @@ namespace AzureAdB2BApi.Controllers
     [Route("[controller]")]
     public class TenantController : ControllerBase
     {
-        private readonly ILoginValidation _userValidation;
+        private readonly ITenantService _tenantService;
 
-        public TenantController(ILoginValidation userValidation)
+
+        public TenantController(ITenantService tenantService)
         {
-            _userValidation = userValidation;
+            _tenantService = tenantService;
         }
 
-        [HttpGet]
-        public async Task<Tenant> GetTenant(string userName, string password)
-        {
-            return Ok(_userValidation.LoginValidator(userName, password));
-        }
+        //[HttpGet]
+        //public async Task<Tenant> SetTenant(User user)
+        //{
+        //    //How do I get user context information from request?
+        //    //I get a type conversion error here, need to fix on monday
+        //    //return Ok(_tenantService.GetTenant(user));
+            
+        //}
     }
 }
