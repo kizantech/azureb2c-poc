@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34701.34
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureAdB2BApi", "AzureAdB2BApi\AzureAdB2BApi.csproj", "{65B09859-6AC8-49BE-96D8-C406CBAB3403}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureAdB2BApi", "AzureAdB2BApi\AzureAdB2BApi.csproj", "{65B09859-6AC8-49BE-96D8-C406CBAB3403}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorAppPoc", "BlazorClientPoc\BlazorAppPoc.csproj", "{9D31926A-0A98-4E49-8761-051284A59DB7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorAppPoc", "BlazorClientPoc\BlazorAppPoc.csproj", "{9D31926A-0A98-4E49-8761-051284A59DB7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

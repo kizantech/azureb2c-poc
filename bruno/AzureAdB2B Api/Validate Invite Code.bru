@@ -1,0 +1,15 @@
+meta {
+  name: Validate Invite Code
+  type: http
+  seq: 2
+}
+
+post {
+  url: https://identity-apiconnector-demo.azurewebsites.net/AccessCode/form
+  body: multipartForm
+  auth: none
+}
+
+body:multipart-form {
+  extension_8fdbaf07f70641b199d6dcf4f7e8f773_InvitationCode: 1234
+}

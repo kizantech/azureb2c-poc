@@ -60,10 +60,13 @@
     protected override async Task OnInitializedAsync()
     {
         Busy = true;
-
+        
         try
         {
-            ToDos = await DbContext.Todos.ToListAsync();
+            if (context.HttpContext?.User?.Identity?.IsAuthenticated == true)
+            {
+                ToDos = await DbContext.Todos.ToListAsync();            
+            }
         }
         finally
         {

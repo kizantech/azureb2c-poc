@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "AzureAdB2B Api",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

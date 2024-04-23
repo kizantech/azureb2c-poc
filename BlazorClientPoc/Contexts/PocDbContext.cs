@@ -27,7 +27,8 @@ namespace BlazorAppPoc.Contexts
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(TenantInfo.ConnectionString);
+            if (TenantInfo?.ConnectionString != null)
+                optionsBuilder.UseSqlServer(TenantInfo.ConnectionString);
         }
     }
 }

@@ -19,6 +19,7 @@
 * [Multitenancy with EF Core](https://learn.microsoft.com/en-us/ef/core/miscellaneous/multitenancy)
 * [Finbuckle Multitenancy](https://www.finbuckle.com/MultiTenant/Docs/v6.13.1/Identity)
 * [Configuring Custom Policies in Azure B2C](https://www.youtube.com/watch?v=aL1kKAH5Sa8&list=PL4svy-vB4AaxRunWQkxOe8h3zP9jAzS5Z&index=7)
+* [Setup B2C + B2B Together](https://www.kallemarjokorpi.fi/blog/how-to-configure-azure-ad-b2c-and-b2b-work-together.html)
 
 ## Setting up the Azure B2C Sample App
 
