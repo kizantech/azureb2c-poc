@@ -1,0 +1,86 @@
+﻿@using Microsoft.EntityFrameworkCore
+@using BlazorAppPoc.Contexts;
+@using BlazorAppPoc.Models;
+@using System.Security.Claims;
+@using BlazorAppPoc.Services
+@rendermode InteractiveServer
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject IHttpContextAccessor context
+@inject PocDbContext DbContext
+@inject UserService UserService
+
+<button class="btn btn-success" onclick="@OnGet">Open Profile</button>
+@if (flag)
+{
+    <h2>User Profile</h2>
+    <div>
+        <p><strong>Name:</strong>@User.FirstName</p>
+        <p><strong>Email:</strong>@User.Email </p>
+    </div>           
+}
+
+@foreach (var item in ToDos)
+{
+    <p>@item.Title + @item.Description</p>          
+}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Claim Type</th>
+            <th>Value</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var claim in context.HttpContext.User.Claims)
+        {
+            <tr>
+                <td>@claim.Type</td>
+                <td>@claim.Value</td>
+            </tr>
+        }
+    </tbody>
+</table>
+<iframe title="Sample Report Demo" width="1140" height="541.25" src="https://playground.powerbi.com/sampleReportEmbed" frameborder="0" allowFullScreen="true"></iframe>
+
+@code{
+    public bool flag;
+    public bool Busy { get; set; }
+    public User User { get; set; }
+    public List<ToDo> ToDos { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        Busy = true;
+        
+        try
+        {
+            if (context.HttpContext?.User?.Identity?.IsAuthenticated == true)
+            {
+                ToDos = await DbContext.Todos.ToListAsync();            
+            }
+        }
+        finally
+        {
+            Busy = false;
+        }
+
+        await base.OnInitializedAsync();
+    }
+
+    public async void OnGet()
+    {
+        var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+        if (authState?.User?.Identity?.IsAuthenticated == true)
+        {
+            var claimsUser = UserService.GetUser();
+            User = new User()
+            {
+                Email = claimsUser.FindFirst(c => c.Type == "emails")?.Value,
+                FirstName = claimsUser.FindFirst(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname")?.Value,
+                LastName = claimsUser.FindFirst(c => c.Type == ClaimTypes.Surname)?.Value,
+                Identityprovider = claimsUser.FindFirst(c => c.Type == "http://schemas.microsoft.com/identity/claims/identityprovider")?.Value
+            };
+        }
+        flag = true;
+    }
+ }

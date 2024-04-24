@@ -19,6 +19,7 @@ namespace AzureAdB2BApi.Services
         public async Task CreateUserInvitationAsync(UserInvitation userInvitation)
         {
             await _dbContext.UserInvitations.AddAsync(userInvitation);
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task<UserInvitation> GetPendingUserInvitationAsync(string invitationCode)
@@ -32,6 +33,7 @@ namespace AzureAdB2BApi.Services
             var invite =  await _dbContext.UserInvitations.Where(i => i.InvitationCode == invitationCode).FirstOrDefaultAsync();
             if (invite != null)
                 _ = _dbContext.Remove(invite);
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task<IList<UserInvitation>> GetPendingUserInvitationsAsync(Guid? customerId = null)

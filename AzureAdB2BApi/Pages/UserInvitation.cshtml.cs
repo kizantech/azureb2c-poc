@@ -16,7 +16,7 @@ namespace AzureAdB2BApi.Pages
         public bool CanManageUserInvitations { get; set; }
         public bool CanSelectGlobalAdmins { get; set; }
         public bool CanSelectCompany { get; set; }
-        public string GlobalAdminInvitationCode { get; } = Guid.Empty.ToString();
+        public string GlobalAdminInvitationCode { get; set; } = InviteCodeGenerator.GenerateInviteCode();
         public IList<UserInvitation> PendingUserInvitations { get; set; }
 
         public UserInvitationModel(ILogger<UserInvitationModel> logger, IInvitationRepository userInvitationRepository, B2cGraphService b2cGraphService)
@@ -31,18 +31,30 @@ namespace AzureAdB2BApi.Pages
             var allUsers = await this.b2cGraphService.GetUsersAsync();
             if (!allUsers.Any())
             {
-                // If there aren't any users yet, allow anonymous access to bootstrap the initial global admin.
-                var globalAdminUserInvitation = new UserInvitation
+                var adminInvite = await userInvitationRepository.GetPendingUserInvitationsAsync(Guid.Empty);
+                if (adminInvite.Any())
                 {
-                    InvitationCode = GlobalAdminInvitationCode,
-                    CustomerId = Guid.Empty,
-                    DelegatedUserManagementRole = Constants.DelegatedUserManagementRoles.GlobalAdmin,
-                    CreatedTime = DateTimeOffset.UtcNow,
-                    ExpiresTime = DateTimeOffset.UtcNow.AddYears(1),
-                };
-                await this.userInvitationRepository.CreateUserInvitationAsync(globalAdminUserInvitation);
-                this.ShowGlobalAdminUserInvitation = true;
-                this.CanManageUserInvitations = false;
+                    GlobalAdminInvitationCode = adminInvite.First().InvitationCode;
+                    this.ShowGlobalAdminUserInvitation = true;
+                    this.CanManageUserInvitations = false;
+                }
+                else
+                {
+                    // If there aren't any users yet, allow anonymous access to bootstrap the initial global admin.
+                    var globalAdminUserInvitation = new UserInvitation
+                    {
+                        InvitationCode = GlobalAdminInvitationCode,
+                        CustomerId = Guid.Empty,
+                        DelegatedUserManagementRole = Constants.DelegatedUserManagementRoles.GlobalAdmin,
+                        CreatedTime = DateTimeOffset.UtcNow,
+                        ExpiresTime = DateTimeOffset.UtcNow.AddYears(1),
+                        CreatedBy = "System",
+                        Id = Guid.NewGuid()
+                    };
+                    await this.userInvitationRepository.CreateUserInvitationAsync(globalAdminUserInvitation);
+                    this.ShowGlobalAdminUserInvitation = true;
+                    this.CanManageUserInvitations = false;
+                }
             }
             else
             {

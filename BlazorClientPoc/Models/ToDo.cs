@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BlazorAppPoc.Models;
 
+[MultiTenant]
 [PrimaryKey(nameof(Id))]
 public class ToDo
 {

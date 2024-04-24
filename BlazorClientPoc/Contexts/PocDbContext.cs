@@ -1,27 +1,28 @@
-﻿using BlazorAppPoc.Models;
-using Finbuckle.MultiTenant;
+﻿using AzureAdB2BApi.Models;
+using BlazorAppPoc.Models;
+using Finbuckle.MultiTenant.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace BlazorAppPoc.Contexts
 {
     public class PocDbContext : MultiTenantDbContext
     {
-        public PocDbContext(ITenantInfo tenantInfo) : base(tenantInfo) { }
-        public PocDbContext(DbContextOptions options, ITenantInfo tenantInfo) : base(tenantInfo, options) { }
+        private TenantInfo TenantInfo { get; set; }
+
+        public PocDbContext(TenantInfo tenantInfo) : base(tenantInfo)
+        {
+            TenantInfo = tenantInfo;
+        }
+
+        public PocDbContext(TenantInfo tenantInfo, DbContextOptions<PocDbContext> options) : base(tenantInfo, options)
+        {
+            TenantInfo = tenantInfo;
+        }
         
         public DbSet<ToDo> Todos { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) 
         {
-            #if DEBUG
-            // modelBuilder.Entity<ToDo>().HasData(                
-            //     new ToDo { Title = "Work", Description = "Go To Work", CompletedDateTimeStamp = null, IsCompleted = false },
-            //     new ToDo { Title = "Standup Meeting", Description = "Attend Morning Standup", CompletedDateTimeStamp = null, IsCompleted = false }, 
-            //     new ToDo { Title = "Workout", Description = "Go To The Gym", CompletedDateTimeStamp = null, IsCompleted = false },
-            //     new ToDo { Title = "Watch Basketball", Description = "Watch March Madness!", CompletedDateTimeStamp = DateTimeOffset.Now.Subtract(TimeSpan.FromDays(5)), IsCompleted = true },
-            //     new ToDo { Title = "Quiet Time", Description = "Read a book, or put together a puzzle", CompletedDateTimeStamp = DateTimeOffset.Now, IsCompleted = true }               
-            //     );
-            #endif
             base.OnModelCreating(modelBuilder);
         }
 
@@ -29,6 +30,7 @@ namespace BlazorAppPoc.Contexts
         {
             if (TenantInfo?.ConnectionString != null)
                 optionsBuilder.UseSqlServer(TenantInfo.ConnectionString);
+            
         }
     }
 }

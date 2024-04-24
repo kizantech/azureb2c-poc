@@ -1,6 +1,6 @@
-@AzureAdB2BApi_HostAddress = http://localhost:5078
+@AzureAdB2BApi_HostAddress = http://skylark-verified-sheep.ngrok-free.app
 
-GET {{AzureAdB2BApi_HostAddress}}/weatherforecast/
+POST {{AzureAdB2BApi_HostAddress}}/api/Invitation/Validate
 Accept: application/json
 
 ###

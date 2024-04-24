@@ -1,3 +1,4 @@
+using AzureAdB2BApi.Contexts;
 using Blazing.Mvvm;
 using Blazing.Mvvm.Infrastructure;
 using Finbuckle.MultiTenant;
@@ -11,6 +12,7 @@ using BlazorAppPoc.Multitenant;
 using BlazorAppPoc.Services;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using TenantInfo = AzureAdB2BApi.Models.TenantInfo;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
@@ -42,7 +44,7 @@ builder.Services.AddControllersWithViews()
 builder.Services.AddMultiTenant<TenantInfo>()
     //.WithClaimStrategy(builder.Configuration["ClaimSettings:TenantIdClaimType"])
     .WithStrategy<BlazorUserStrategy>(ServiceLifetime.Scoped, [])
-    .WithConfigurationStore();
+    .WithEFCoreStore<InvitationsDbContext, TenantInfo>();
 
 var app = builder.Build();
 

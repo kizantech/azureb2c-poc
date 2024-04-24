@@ -10,7 +10,7 @@
         public static class UserAttributes
         {
             public const string DelegatedUserManagementRole = nameof(DelegatedUserManagementRole);
-            public const string InvitationCode = nameof(InvitationCode);
+            public const string InviteCode = nameof(InviteCode);
             public const string CustomerId = nameof(CustomerId);
         }
 

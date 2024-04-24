@@ -13,7 +13,9 @@ using Microsoft.Extensions.Hosting;
 using AzureAdB2BApi.Interfaces;
 using AzureAdB2BApi.Services;
 using AzureAdB2BApi.Utils;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.EntityFrameworkCore;
 
 namespace AzureAdB2BApi
 {
@@ -25,10 +27,14 @@ namespace AzureAdB2BApi
         }
 
         public IConfiguration Configuration { get; }
+        private const string AzureB2CCorsPolicy = "_azureB2cCorsPolicy";
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<InvitationsDbContext>();
+            services.AddDbContext<InvitationsDbContext>(options =>
+            {
+                options.UseSqlServer(Configuration.GetConnectionString("IdentityDatabase"));
+            });
             services.AddScoped<IInvitationRepository, SqlUserInvitationRepository>();
 #pragma warning disable 0618 // AzureADb2CDefaults is obsolete in favor of "Microsoft.Identity.Web"
             var b2cConfigurationSection = Configuration.GetSection("AzureAdB2C");
@@ -37,7 +43,18 @@ namespace AzureAdB2BApi
                 domain: b2cConfigurationSection.GetValue<string>(nameof(AzureADB2COptions.Domain)),
                 clientSecret: b2cConfigurationSection.GetValue<string>(nameof(AzureADB2COptions.ClientSecret)),
                 b2cExtensionsAppClientId: b2cConfigurationSection.GetValue<string>("B2cExtensionsAppClientId"));
+            services.AddCors(config =>
+            {
+                config.AddPolicy(name: AzureB2CCorsPolicy,
+                    policy =>
+                    {
+                        policy.AllowAnyOrigin()
+                            .AllowAnyHeader()
+                            .AllowAnyMethod()
+                            .SetPreflightMaxAge(TimeSpan.FromSeconds(200));
 
+                    });
+            });
             services.AddSingleton<B2cGraphService>(b2cGraphService);
 
             services.Configure<ForwardedHeadersOptions>(options =>
@@ -68,6 +85,8 @@ namespace AzureAdB2BApi
 
             services.AddRazorPages();
             services.AddControllers();
+            services.AddEndpointsApiExplorer();
+            services.AddSwaggerGen();
             services.AddRouting(options => { options.LowercaseUrls = true; });
         }
 
@@ -88,10 +107,12 @@ namespace AzureAdB2BApi
 
             if (!env.IsDevelopment())
                 app.UseHttpsRedirection();
+            app.UseSwagger();
+            app.UseSwaggerUI();
             app.UseStaticFiles();
 
             app.UseRouting();
-
+            app.UseCors(AzureB2CCorsPolicy);
             app.UseAuthentication();
             app.UseAuthorization();
 

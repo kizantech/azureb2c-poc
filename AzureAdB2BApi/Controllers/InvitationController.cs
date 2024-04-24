@@ -32,7 +32,7 @@ public class InvitationController(IInvitationRepository invitationRepository, IL
                 logger.LogInformation($"- {element.Name}: {element.Value.GetRawText()}");
                 // The element name should be the full extension name as seen by the Graph API (e.g. "extension_appid_InvitationCode").
                 if (element.Name.Equals(
-                        b2cGraphService.GetUserAttributeExtensionName(Constants.UserAttributes.InvitationCode),
+                        b2cGraphService.GetUserAttributeExtensionName(Constants.UserAttributes.InviteCode),
                         StringComparison.InvariantCultureIgnoreCase))
                 {
                     invitationCode = element.Value.GetString();
@@ -101,6 +101,7 @@ public class InvitationController(IInvitationRepository invitationRepository, IL
             { "action", action },
             { "userMessage", userMessage },
             { b2cGraphService.GetUserAttributeExtensionName(Constants.UserAttributes.CustomerId), userInvitation?.CustomerId ?? Guid.Empty }, // Note: returning just "extension_<AttributeName>" (without the App ID) would work as well!
+            { b2cGraphService.GetUserAttributeExtensionName(Constants.UserAttributes.DelegatedUserManagementRole), userInvitation?.DelegatedUserManagementRole } // Note: returning just "extension_<AttributeName>" (without the App ID) would work as well!
         };
         if (statusCode != 200)
         {

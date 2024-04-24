@@ -1,5 +1,6 @@
 ﻿using Azure.Identity;
 using AzureAdB2BApi.Models;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Graph;
 
 namespace AzureAdB2BApi.Services
@@ -25,7 +26,7 @@ namespace AzureAdB2BApi.Services
             // and if you need more, you have to explicitly request these as below.
             var companyIdExtensionName = GetUserAttributeExtensionName(Utils.Constants.UserAttributes.CustomerId);
             var delegatedUserManagementRoleExtensionName = GetUserAttributeExtensionName(Utils.Constants.UserAttributes.DelegatedUserManagementRole);
-            var invitationCodeExtensionName = GetUserAttributeExtensionName(Utils.Constants.UserAttributes.InvitationCode);
+            var invitationCodeExtensionName = GetUserAttributeExtensionName(Utils.Constants.UserAttributes.InviteCode);
             var userPropertiesToRequest = new[] { nameof(Microsoft.Graph.Models.User.Id), nameof(Microsoft.Graph.Models.User.DisplayName), nameof(Microsoft.Graph.Models.User.Identities),
                 companyIdExtensionName, delegatedUserManagementRoleExtensionName, invitationCodeExtensionName };
 
@@ -56,9 +57,9 @@ namespace AzureAdB2BApi.Services
                         {
                             Id = user.Id,
                             Name = user.DisplayName,
-                            InvitationCode = GetUserAttribute(user, invitationCodeExtensionName),
-                            CustomerId = Guid.Parse(GetUserAttribute(user, companyIdExtensionName)),
-                            DelegatedUserManagementRole = GetUserAttribute(user, delegatedUserManagementRoleExtensionName)
+                            InvitationCode = GetUserAttribute<string>(user, invitationCodeExtensionName),
+                            CustomerId = GetUserAttribute<Guid>(user, companyIdExtensionName),
+                            DelegatedUserManagementRole = GetUserAttribute<string>(user, delegatedUserManagementRoleExtensionName) ?? ""
                         });
                     }
                 }
@@ -93,13 +94,19 @@ namespace AzureAdB2BApi.Services
             return $"extension_{_b2cExtensionPrefix}_{userAttributeName}";
         }
 
-        private string GetUserAttribute(Microsoft.Graph.Models.User user, string extensionName)
+        private T? GetUserAttribute<T>(Microsoft.Graph.Models.User user, string extensionName)
         {
             if (user.AdditionalData == null || !user.AdditionalData.ContainsKey(extensionName))
             {
-                return null;
+                return default(T);
             }
-            return (string)user.AdditionalData[extensionName];
+
+            if (user.AdditionalData[extensionName] is T)
+            {
+                return (T)user.AdditionalData[extensionName];
+            }
+
+            throw new InvalidCastException("Type T is invalid for this object.");
         }
     }
 }
