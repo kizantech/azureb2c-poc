@@ -14,11 +14,6 @@ namespace AzureAdB2BApi.Contexts
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<UserInvitation>().HasData(
-                new UserInvitation { InvitationCode = InviteCodeGenerator.GenerateInviteCode(), DelegatedUserManagementRole = Constants.DelegatedUserManagementRoles.CompanyAdmin, CustomerId = Guid.NewGuid(), CreatedBy = "system", CreatedTime = DateTimeOffset.Now, ExpiresTime = DateTimeOffset.Now },
-                new UserInvitation { InvitationCode = InviteCodeGenerator.GenerateInviteCode(), DelegatedUserManagementRole = Constants.DelegatedUserManagementRoles.CompanyAdmin, CustomerId = Guid.NewGuid(), CreatedBy = "system", CreatedTime = DateTimeOffset.Now, ExpiresTime = DateTimeOffset.Now }
-            );
-                        
             base.OnModelCreating(modelBuilder);
         }
 

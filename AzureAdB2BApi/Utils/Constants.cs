@@ -4,7 +4,7 @@
     {
         public static class ClaimTypes
         {
-            public const string ObjectId = "oid";
+            public const string ObjectId = "http://schemas.microsoft.com/identity/claims/objectidentifier";
         }
 
         public static class UserAttributes
