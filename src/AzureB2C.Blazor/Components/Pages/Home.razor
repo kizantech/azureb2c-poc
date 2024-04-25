@@ -1,0 +1,21 @@
+﻿@page "/"
+@using Microsoft.EntityFrameworkCore
+@using System.Security.Claims;
+@using AzureB2C.Blazor.Services
+@rendermode InteractiveServer
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject UserService UserService
+
+<PageTitle>Home</PageTitle>
+<AuthorizeView>
+    <NotAuthorized>
+        <p>You are not logged in. Please login to access customer information.</p>
+    </NotAuthorized>
+    <Authorized>
+        <ToDoView />
+    </Authorized>
+</AuthorizeView>
+
+@code{
+    
+}
