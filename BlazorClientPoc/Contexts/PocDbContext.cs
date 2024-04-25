@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BlazorAppPoc.Contexts
 {
-    public class PocDbContext : MultiTenantDbContext
+    public class PocDbContext : MultiTenantIdentityDbContext
     {
         private TenantInfo TenantInfo { get; set; }
 
@@ -30,7 +30,6 @@ namespace BlazorAppPoc.Contexts
         {
             if (TenantInfo?.ConnectionString != null)
                 optionsBuilder.UseSqlServer(TenantInfo.ConnectionString);
-            
         }
     }
 }

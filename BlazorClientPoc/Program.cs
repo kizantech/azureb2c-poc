@@ -10,58 +10,77 @@ using BlazorAppPoc.Contexts;
 using BlazorAppPoc.Middleware;
 using BlazorAppPoc.Multitenant;
 using BlazorAppPoc.Services;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using TenantInfo = AzureAdB2BApi.Models.TenantInfo;
 
-var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents()
-    .AddMicrosoftIdentityConsentHandler();
-builder.Services.AddDbContext<PocDbContext>();
-builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<TenantInfo>();
-builder.Services.AddScoped<UserService>();
-builder.Services.TryAddEnumerable(
-    ServiceDescriptor.Scoped<CircuitHandler, UserCircuitHandler>());
-
-builder.Services.AddMvvmNavigation(options =>
+namespace BlazorAppPoc
 {
-    options.HostingModel = BlazorHostingModel.Server;
-}); 
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            var builder = WebApplication.CreateBuilder(args);
+            
+            builder.Services.AddRazorComponents()
+                .AddInteractiveServerComponents()
+                .AddMicrosoftIdentityConsentHandler();
+            
+            builder.Services.AddDbContext<InvitationsDbContext>(options =>
+            {
+                options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityDatabase"));
+            });
+            
+            builder.Services.AddScoped<UserService>();
+            
+            // builder.Services.TryAddEnumerable(
+            //     ServiceDescriptor.Scoped<CircuitHandler, UserCircuitHandler>());
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddEntityFrameworkStores<PocDbContext>();
+            builder.Services.AddMvvmNavigation(options => { options.HostingModel = BlazorHostingModel.Server; });
+            
+            builder.Services.AddControllersWithViews()
+                .AddMicrosoftIdentityUI();
+            
+            // builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            //     .AddEntityFrameworkStores<PocDbContext>();
 
-builder.Services.AddMicrosoftIdentityWebAppAuthentication(builder.Configuration, "AzureAdB2C");
+            builder.Services.AddCascadingAuthenticationState();
+            // builder.Services.AddHttpClient();
+            // builder.Services.AddHttpContextAccessor();
+            
+            builder.Services.AddMultiTenant<TenantInfo>()
+                .WithClaimStrategy(builder.Configuration["ClaimSettings:TenantIdClaimType"])
+                .WithStrategy<BlazorUserStrategy>(ServiceLifetime.Scoped, [])
+                .WithEFCoreStore<InvitationsDbContext, TenantInfo>();
+            
+            builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+                .AddMicrosoftIdentityWebApp(builder.Configuration, "AzureAdB2C");
 
-builder.Services.AddCascadingAuthenticationState();
-builder.Services.AddHttpClient();
-builder.Services.AddHttpContextAccessor();            
-builder.Services.AddControllersWithViews()
-    .AddMicrosoftIdentityUI();
+            var app = builder.Build();
 
-builder.Services.AddMultiTenant<TenantInfo>()
-    //.WithClaimStrategy(builder.Configuration["ClaimSettings:TenantIdClaimType"])
-    .WithStrategy<BlazorUserStrategy>(ServiceLifetime.Scoped, [])
-    .WithEFCoreStore<InvitationsDbContext, TenantInfo>();
+            if (!app.Environment.IsDevelopment())
+            {
+                app.UseExceptionHandler("/Error");
+                app.UseHsts();
+            }
 
-var app = builder.Build();
-
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Error");
-    app.UseHsts();
+            app.UseHttpsRedirection();
+            app.UseMultiTenant();
+            
+            app.UseStaticFiles();
+            app.UseRouting();
+            
+            app.UseAuthentication();
+            app.UseAuthorization();
+            
+            app.UseAntiforgery();
+            //app.UseMiddleware<UserServiceMiddleware>();
+            app.MapControllers();
+            app.MapRazorComponents<App>()
+                .AddInteractiveServerRenderMode();
+            app.Run();
+        }
+    }
 }
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-app.UseRouting();
-app.UseAuthentication();
-app.UseAuthorization();
-app.MapControllers();
-app.UseAntiforgery();
-app.UseMiddleware<UserServiceMiddleware>();
-app.UseMultiTenant();
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
-app.Run();

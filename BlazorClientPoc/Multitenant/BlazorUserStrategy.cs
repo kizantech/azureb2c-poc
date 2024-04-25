@@ -10,6 +10,7 @@ public class BlazorUserStrategy(UserService userService, IConfiguration configur
     public async Task<string?> GetIdentifierAsync(object context)
     {
         var user = userService.GetUser();
+        if (user == null) return null;
         var claim = user.FindFirst(configuration["ClaimSettings:TenantIdClaimType"]);
         return claim?.Value ?? null;
     }
