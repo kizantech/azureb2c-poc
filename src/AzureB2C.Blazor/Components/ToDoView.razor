@@ -6,11 +6,11 @@
 @using AzureB2C.Data.Model
 @using Finbuckle.MultiTenant
 @using Finbuckle.MultiTenant.Abstractions
+@using Microsoft.AspNetCore.Components.Authorization
 @using User = AzureB2C.Blazor.Models.User
 
 @using Microsoft.Graph.Models
 @using TenantInfo = AzureB2C.Data.Model.CustomerInfo
-@rendermode InteractiveServer
 @inject AuthenticationStateProvider authenticationStateProvider
 @inject UserService UserService
 @inject IMultiTenantContextAccessor<TenantInfo> TenantContext
