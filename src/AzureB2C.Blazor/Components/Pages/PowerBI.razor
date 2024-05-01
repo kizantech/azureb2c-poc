@@ -56,7 +56,7 @@
                     column: "Id"
                 },
                 operator: "In",
-                values: [@CustomerId] // Sample to filter based on a field. You would use @@CustomerId to set the value to the current CustomerId for example
+                values: ["@CustomerId"] // Sample to filter based on a field. You would use @@CustomerId to set the value to the current CustomerId for example
             };
             // Replace report's filters with the same target data field.
             try {
