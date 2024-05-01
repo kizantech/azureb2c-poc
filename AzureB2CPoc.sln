@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureB2C.Blazor", "src\Azur
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureB2C.Data", "src\AzureB2C.Data\AzureB2C.Data.csproj", "{16C832A0-BA74-4FED-B436-A548D7A0E104}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureB2C.Data.Migrator", "src\AzureB2C.Data.Migrator\AzureB2C.Data.Migrator.csproj", "{11198EE0-A77B-4BE8-ACAC-4020081546A1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureB2C.Data.Migrator", "src\AzureB2C.Data.Migrator\AzureB2C.Data.Migrator.csproj", "{11198EE0-A77B-4BE8-ACAC-4020081546A1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

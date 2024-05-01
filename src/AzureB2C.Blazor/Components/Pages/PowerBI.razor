@@ -1,0 +1,112 @@
+﻿@page "/PowerBI"
+@using System.Net.Http
+@using System.Threading.Tasks
+@using AzureB2C.Blazor.Middleware
+@using AzureB2C.Blazor.Models
+@using AzureB2C.Blazor.Services
+@using Finbuckle.MultiTenant
+@using Finbuckle.MultiTenant.Abstractions
+@using Microsoft.Identity.Client
+@using Microsoft.PowerBI.Api
+@using Microsoft.PowerBI.Api.Models
+@using Microsoft.Rest
+@using Newtonsoft.Json.Linq
+@using Microsoft.Extensions.Configuration
+@using Microsoft.Extensions.Options
+@inject IJSRuntime JSRuntime
+@inject IConfiguration _configuration
+@inject PbiEmbedService PbiEmbedService
+@inject IOptions<AzureAd> azureAd
+@inject IOptions<AzureB2C.Blazor.Models.PowerBI> powerBi
+@inject IMultiTenantContextAccessor<TenantInfo> TenantContext
+
+
+<h3>PowerBI Embedded Report</h3>
+<div @ref="@PowerBIElement" style="width:100%;height:600px;max-width: 2000px" />
+
+
+<script src="js/powerbi.min.js"></script>
+<script>
+    window.ShowMyPowerBI = {
+        showReport: function (reportContainer, accessToken, embedUrl, embedReportId) {
+            // Get models. models contains enums that can be used.
+            // See https://learn.microsoft.com/en-us/javascript/api/overview/powerbi/embed-report for how to configure filters, slicers, etc for your own report
+            // see https://learn.microsoft.com/en-us/javascript/api/overview/powerbi/control-report-filters for details around pre-filtering data
+            var models = window['powerbi-client'].models;
+            var config = {
+                type: 'report',
+                tokenType: models.TokenType.Embed,
+                accessToken: accessToken,
+                embedUrl: embedUrl,
+                id: embedReportId,
+                permissions: models.Permissions.All,
+                settings: {
+                    filterPaneEnabled: false,
+                    navContentPaneEnabled: false
+                }
+            };
+            // Embed the report and display it within the div container.
+            const report = powerbi.embed(reportContainer, config);
+
+            const filter: models.IBasicFilter = {
+                $schema: "http://powerbi.com/product/schema#basic",
+                filterType: models.FilterType.Basic,
+                target: {
+                    table: "Customer",
+                    column: "Id"
+                },
+                operator: "In",
+                values: [@CustomerId] // Sample to filter based on a field. You would use @@CustomerId to set the value to the current CustomerId for example
+            };
+            // Replace report's filters with the same target data field.
+            try {
+                await report.updateFilters(models.FiltersOperations.Replace, [filter]);
+                console.log("Report filters were replaced.");
+            }
+            catch (errors) {
+                console.log(errors);
+            }
+        },
+    };
+</script>
+@code {
+    private ElementReference PowerBIElement;
+    public bool Busy;
+    public string CustomerId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Busy = true;
+        try
+        {
+            if (TenantContext.MultiTenantContext.IsResolved)
+            {
+                CustomerId = TenantContext.MultiTenantContext.TenantInfo?.Id ?? throw new MissingMemberException(nameof(TenantInfo), nameof(TenantContext.MultiTenantContext.TenantInfo.Id));
+            }
+
+            Busy = false;
+        }
+        catch (Exception e)
+        {
+            Busy = false;
+        }
+        await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var pbiOptions = powerBi.Value;
+        var aadOptions = azureAd.Value;
+        if (firstRender)
+        {
+            var embedParams = PbiEmbedService.GetEmbedParams(new Guid(pbiOptions.WorkspaceId), new Guid(pbiOptions.ReportId));
+            if (!embedParams.EmbedReport.Any()) return;
+            await Interop.CreateReport(
+                JSRuntime,
+                PowerBIElement,
+                embedParams.EmbedToken.Token,
+                embedParams.EmbedReport.First().EmbedUrl,
+                embedParams.EmbedReport.First().ReportId.ToString());
+        }
+    }
+}

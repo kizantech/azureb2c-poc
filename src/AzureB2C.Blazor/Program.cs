@@ -1,4 +1,5 @@
 using AzureB2C.Blazor.Components;
+using AzureB2C.Blazor.Models;
 using AzureB2C.Blazor.Multitenant;
 using AzureB2C.Blazor.Services;
 using AzureB2C.Data.Context;
@@ -22,6 +23,12 @@ namespace AzureB2C.Blazor
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents()
                 .AddMicrosoftIdentityConsentHandler();
+            // Loading appsettings.json in C# Model classes
+            builder.Services.Configure<AzureAd>(builder.Configuration.GetSection("AzureAd"))
+                .Configure<PowerBI>(builder.Configuration.GetSection("PowerBI"));
+
+            builder.Services.AddScoped(typeof(AadService))
+                .AddScoped(typeof(PbiEmbedService));
             
             builder.Services.AddDbContext<AzureB2cAuthDbContext>(options =>
             {
