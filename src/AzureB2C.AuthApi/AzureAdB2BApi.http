@@ -1,4 +1,4 @@
-@AzureAdB2BApi_HostAddress = http://skylark-verified-sheep.ngrok-free.app
+@AzureAdB2BApi_HostAddress = https://skylark-verified-sheep.ngrok-free.app
 
 POST {{AzureAdB2BApi_HostAddress}}/api/Invitation/Validate
 Accept: application/json

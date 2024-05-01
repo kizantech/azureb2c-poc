@@ -25,6 +25,7 @@
             <div>
                 <p><strong>Name:</strong>@context.User.Identity.Name</p>
                 <p><strong>Company Id:</strong>@context.User.FindFirstValue("extension_CustomerId") </p>
+                <p><strong>Tenant Context: </strong>@TenantContext.MultiTenantContext.TenantInfo?.CustomerId</p>
             </div>
         </Authorized>
     </AuthorizeView>

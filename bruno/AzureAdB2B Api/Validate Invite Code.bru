@@ -5,9 +5,15 @@ meta {
 }
 
 post {
-  url: https://identity-apiconnector-demo.azurewebsites.net/AccessCode/form
-  body: multipartForm
+  url: https://identity-apiconnector-demo.azurewebsites.net/api/invitation/validate
+  body: json
   auth: none
+}
+
+body:json {
+  {
+    "extension_554b87c384484a1e833fbc01fc66c8a5_InviteCode":"P7CHFX2D6V"
+  }
 }
 
 body:multipart-form {

@@ -17,5 +17,12 @@ namespace AzureB2C.Blazor.Middleware
                 reportContainer, accessToken, embedUrl,
                 embedReportId);
         }
+
+        public static ValueTask SetCustomerId(
+            IJSRuntime jsRuntime,
+            string customerId)
+        {
+            return jsRuntime.InvokeVoidAsync("CustomerId.setCustomerId", customerId);
+        }
     }
 }

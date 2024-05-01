@@ -28,7 +28,7 @@ namespace AzureB2C.AuthApi
                 options.UseSqlServer(Configuration.GetConnectionString("IdentityDatabase"));
             });
             services.AddScoped<IInvitationRepository, SqlUserInvitationRepository>();
-#pragma warning disable 0618 // AzureADb2CDefaults is obsolete in favor of "Microsoft.Identity.Web"
+            #pragma warning disable 0618 // AzureADb2CDefaults is obsolete in favor of "Microsoft.Identity.Web"
             var b2cConfigurationSection = Configuration.GetSection("AzureAdB2C");
             var b2cGraphService = new B2cGraphService(
                 clientId: b2cConfigurationSection.GetValue<string>(nameof(AzureADB2COptions.ClientId)),
@@ -72,7 +72,7 @@ namespace AzureB2C.AuthApi
                 // Set the "role" claim type to be the "extension_DelegatedUserManagementRole" user attribute.
                 options.TokenValidationParameters.RoleClaimType = b2cGraphService.GetUserAttributeClaimName(Constants.UserAttributes.DelegatedUserManagementRole);
             });
-#pragma warning restore 0618
+            #pragma warning restore 0618
 
 
             services.AddRazorPages();

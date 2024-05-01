@@ -1,4 +1,4 @@
-using AzureB2C.Blazor.Components;
+using AzureB2C.Blazor.Middleware;
 using AzureB2C.Blazor.Models;
 using AzureB2C.Blazor.Multitenant;
 using AzureB2C.Blazor.Services;
@@ -20,9 +20,13 @@ namespace AzureB2C.Blazor
         {
             var builder = WebApplication.CreateBuilder(args);
             
-            builder.Services.AddRazorComponents()
-                .AddInteractiveServerComponents()
+            builder.Services.AddRazorPages();
+            builder.Services.AddServerSideBlazor()
                 .AddMicrosoftIdentityConsentHandler();
+            builder.Services.AddAuthorization(options =>
+            {
+                options.FallbackPolicy = options.DefaultPolicy;
+            });
             // Loading appsettings.json in C# Model classes
             builder.Services.Configure<AzureAd>(builder.Configuration.GetSection("AzureAd"))
                 .Configure<PowerBI>(builder.Configuration.GetSection("PowerBI"));
@@ -41,11 +45,13 @@ namespace AzureB2C.Blazor
             
             builder.Services.AddControllersWithViews()
                 .AddMicrosoftIdentityUI();
+
+            builder.Services.AddRazorPages();
             
             builder.Services.AddCascadingAuthenticationState();
             
             builder.Services.AddMultiTenant<CustomerInfo>()
-                .WithClaimStrategy(builder.Configuration["ClaimSettings:TenantIdClaimType"])
+                //.WithClaimStrategy(builder.Configuration["ClaimSettings:TenantIdClaimType"])
                 .WithStrategy<BlazorUserStrategy>(ServiceLifetime.Scoped, [])
                 .WithEFCoreStore<AzureB2cAuthDbContext, CustomerInfo>();
             
@@ -61,18 +67,21 @@ namespace AzureB2C.Blazor
             }
 
             app.UseHttpsRedirection();
-            app.UseMultiTenant();
-            
-            app.UseStaticFiles();
-            app.UseRouting();
             
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseMiddleware<UserServiceMiddleware>();
+            
+            app.UseMultiTenant();
+            app.UseStaticFiles();
+            app.UseRouting();
             
             app.UseAntiforgery();
             app.MapControllers();
-            app.MapRazorComponents<App>()
-                .AddInteractiveServerRenderMode();
+            app.MapBlazorHub();
+            app.MapFallbackToPage("/_Host");
+            //app.MapRazorComponents<App>()
+            //    .AddInteractiveServerRenderMode();
             app.Run();
         }
     }

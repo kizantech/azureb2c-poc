@@ -1,9 +1,12 @@
 ﻿@page "/PowerBI"
+@rendermode InteractiveServer
 @using System.Net.Http
+@using System.Security.Claims
 @using System.Threading.Tasks
 @using AzureB2C.Blazor.Middleware
 @using AzureB2C.Blazor.Models
 @using AzureB2C.Blazor.Services
+@using AzureB2C.Data.Model
 @using Finbuckle.MultiTenant
 @using Finbuckle.MultiTenant.Abstractions
 @using Microsoft.Identity.Client
@@ -18,15 +21,40 @@
 @inject PbiEmbedService PbiEmbedService
 @inject IOptions<AzureAd> azureAd
 @inject IOptions<AzureB2C.Blazor.Models.PowerBI> powerBi
-@inject IMultiTenantContextAccessor<TenantInfo> TenantContext
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject UserService UserService
+@inject IMultiTenantContextAccessor<CustomerInfo> TenantContext
+@inject IConfiguration Configuration
+@inject IJSRuntime js;
 
-
-<h3>PowerBI Embedded Report</h3>
-<div @ref="@PowerBIElement" style="width:100%;height:600px;max-width: 2000px" />
-
+@if (!Busy)
+{
+    <AuthorizeView>
+        <Authorized>
+            <h2>User Profile</h2>
+            <div>
+                <p><strong>Name:</strong>@context.User.Identity.Name</p>
+                <p><strong>Company Id:</strong>@context.User.FindFirstValue("extension_CustomerId") </p>
+                <p><strong>Tenant Context: </strong>@TenantContext.MultiTenantContext.TenantInfo?.CustomerId</p>
+            </div>
+            <h3>PowerBI Embedded Report</h3>
+            <div @ref="@PowerBIElement" style="width:100%;height:600px;max-width: 2000px"/>
+        </Authorized>
+    </AuthorizeView>
+}
 
 <script src="js/powerbi.min.js"></script>
 <script>
+    window.CustomerId = {
+        getCustomerId: function () {
+            return window['customerId'];
+        },
+
+        setCustomerId: function (customerId) {
+            window['customerId'] = customerId;
+        },
+    };
+    
     window.ShowMyPowerBI = {
         showReport: function (reportContainer, accessToken, embedUrl, embedReportId) {
             // Get models. models contains enums that can be used.
@@ -48,7 +76,7 @@
             // Embed the report and display it within the div container.
             const report = powerbi.embed(reportContainer, config);
 
-            const filter: models.IBasicFilter = {
+            const filter = {
                 $schema: "http://powerbi.com/product/schema#basic",
                 filterType: models.FilterType.Basic,
                 target: {
@@ -56,11 +84,12 @@
                     column: "Id"
                 },
                 operator: "In",
-                values: ["@CustomerId"] // Sample to filter based on a field. You would use @@CustomerId to set the value to the current CustomerId for example
+                values: [window.CustomerId.getCustomerId()] // Sample to filter based on a field. You would use @@CustomerId to set the value to the current CustomerId for example
             };
+            console.log(`Customer Id is currently set to ${window.CustomerId.getCustomerId()}`);
             // Replace report's filters with the same target data field.
             try {
-                await report.updateFilters(models.FiltersOperations.Replace, [filter]);
+                report.updateFilters(models.FiltersOperations.Replace, [filter]);
                 console.log("Report filters were replaced.");
             }
             catch (errors) {
@@ -68,6 +97,9 @@
             }
         },
     };
+
+
+
 </script>
 @code {
     private ElementReference PowerBIElement;
@@ -79,9 +111,9 @@
         Busy = true;
         try
         {
-            if (TenantContext.MultiTenantContext.IsResolved)
+            if (TenantContext.MultiTenantContext.IsResolved == true)
             {
-                CustomerId = TenantContext.MultiTenantContext.TenantInfo?.Id ?? throw new MissingMemberException(nameof(TenantInfo), nameof(TenantContext.MultiTenantContext.TenantInfo.Id));
+                CustomerId = TenantContext.MultiTenantContext.TenantInfo?.CustomerId.ToString() ?? throw new MissingMemberException(nameof(TenantInfo), nameof(TenantContext.MultiTenantContext.TenantInfo.Id));
             }
 
             Busy = false;
@@ -92,21 +124,30 @@
         }
         await base.OnInitializedAsync();
     }
-
+    
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         var pbiOptions = powerBi.Value;
         var aadOptions = azureAd.Value;
         if (firstRender)
         {
-            var embedParams = PbiEmbedService.GetEmbedParams(new Guid(pbiOptions.WorkspaceId), new Guid(pbiOptions.ReportId));
-            if (!embedParams.EmbedReport.Any()) return;
-            await Interop.CreateReport(
-                JSRuntime,
-                PowerBIElement,
-                embedParams.EmbedToken.Token,
-                embedParams.EmbedReport.First().EmbedUrl,
-                embedParams.EmbedReport.First().ReportId.ToString());
+            try
+            {
+                await Interop.SetCustomerId(JSRuntime, CustomerId);
+                
+                var embedParams = PbiEmbedService.GetEmbedParams(new Guid(pbiOptions.WorkspaceId), new Guid(pbiOptions.ReportId));
+                if (!embedParams.EmbedReport.Any()) return;
+                await Interop.CreateReport(
+                    JSRuntime,
+                    PowerBIElement,
+                    embedParams.EmbedToken.Token,
+                    embedParams.EmbedReport.First().EmbedUrl,
+                    embedParams.EmbedReport.First().ReportId.ToString());
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
     }
 }
