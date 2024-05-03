@@ -46,7 +46,7 @@ Update the appsettings.json AzureAdB2c with your configuration:
 }
 ```
 
-Update the Finbuckle Multitenant configuration:
+Update your database connection strings (in Azureb2C.AuthApi, AzureB2C.Blazor, AzureB2C.Data.Migrator appsettings.json files):
 ```json
 {
     ...
@@ -54,6 +54,9 @@ Update the Finbuckle Multitenant configuration:
     "Defaults": {
       "ConnectionString": "{{Your Azure SQL Server connection string}}"
     }
+  },
+  "ConnectionStrings": {
+    "IdentityDatabase": "{{Your Azure SQL Server connection string goes here}}"
   }
 }
 ```
