@@ -53,20 +53,7 @@ Update the Finbuckle Multitenant configuration:
   "Finbuckle:MultiTenant:Stores:ConfigurationStore": {
     "Defaults": {
       "ConnectionString": "{{Your Azure SQL Server connection string}}"
-    },
-    "Tenants": [
-      // Configure tenants here or in your database
-      {
-        "Id": "496b6dc7-ec17-4bce-ad61-aca711cd8dc7",
-        "Identifier": "AzureB2C",
-        "Name": "AzureB2C"
-      },
-      {
-        "Id": "unique-id-ao41n44",
-        "Identifier": "tenant-2",
-        "Name": "Name of Tenant 2"
-      }
-    ]
+    }
   }
 }
 ```
