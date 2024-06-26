@@ -11,5 +11,6 @@ namespace AzureB2C.Blazor.Models
 
         // Report Id for which Embed token needs to be generated
         public string ReportId { get; set; }
+
     }
 }

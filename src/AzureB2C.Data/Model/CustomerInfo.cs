@@ -9,4 +9,6 @@ public class CustomerInfo : ITenantInfo
     public string? Name { get; set; }
     public Guid CustomerId { get; set; }
     public string? ConnectionString { get; set; }
+    // add any PowerBI Config Data here, example ProfileId
+    public Guid PowerBiProfileId { get; set; }
 }

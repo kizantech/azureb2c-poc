@@ -36,6 +36,7 @@
                 <p><strong>Name:</strong>@context.User.Identity.Name</p>
                 <p><strong>Company Id:</strong>@context.User.FindFirstValue("extension_CustomerId") </p>
                 <p><strong>Tenant Context: </strong>@TenantContext.MultiTenantContext.TenantInfo?.CustomerId</p>
+                <p><strong>Power BI Profile Id: </strong>@TenantContext.MultiTenantContext.TenantInfo?.PowerBiProfileId</p>
             </div>
             <h3>PowerBI Embedded Report</h3>
             <div @ref="@PowerBIElement" style="width:100%;height:600px;max-width: 2000px"/>

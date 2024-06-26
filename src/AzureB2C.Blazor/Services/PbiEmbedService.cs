@@ -2,6 +2,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 // ----------------------------------------------------------------------------
+
+using AzureB2C.Data.Model;
+using Finbuckle.MultiTenant.Abstractions;
+
 namespace AzureB2C.Blazor.Services
 {
     using AzureB2C.Blazor.Models;
@@ -17,10 +21,12 @@ namespace AzureB2C.Blazor.Services
     {
         private readonly AadService aadService;
         private readonly string powerBiApiUrl = "https://api.powerbi.com";
+        private readonly CustomerInfo tenantContext;
 
-        public PbiEmbedService(AadService aadService)
+        public PbiEmbedService(AadService aadService, IMultiTenantContext<CustomerInfo> tenantContext)
         {
             this.aadService = aadService;
+            this.tenantContext = tenantContext.TenantInfo ?? throw new ();
         }
 
         /// <summary>
@@ -30,7 +36,7 @@ namespace AzureB2C.Blazor.Services
         public PowerBIClient GetPowerBIClient()
         {
             var tokenCredentials = new TokenCredentials(aadService.GetAccessToken(), "Bearer");
-            return new PowerBIClient(new Uri(powerBiApiUrl), tokenCredentials);
+            return new PowerBIClient(new Uri(powerBiApiUrl), tokenCredentials, profileObjectId: tenantContext.PowerBiProfileId);
         }
 
         /// <summary>
