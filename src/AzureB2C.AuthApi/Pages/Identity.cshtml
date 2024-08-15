@@ -19,5 +19,17 @@
             <td>@claim.Value</td>
         </tr>
     }
+        <tr>
+            <td>Company Admin</td>
+            <td>@this.User.IsInRole(Constants.DelegatedUserManagementRoles.CompanyAdmin)</td>
+        </tr>
+        <tr>
+            <td>Company User</td>
+            <td>@this.User.IsInRole(Constants.DelegatedUserManagementRoles.CompanyUser)</td>
+        </tr>
+        <tr>
+            <td>Global Admin</td>
+            <td>@this.User.IsInRole(Constants.DelegatedUserManagementRoles.GlobalAdmin)</td>
+        </tr>
     </tbody>
 </table>

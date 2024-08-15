@@ -34,13 +34,14 @@ Update the appsettings.json AzureAdB2c with your configuration:
 {
   "AzureAdB2C": {
     "Instance": "https://{{Your Azure B2C Domain}}.b2clogin.com/tfp/",
-    "ClientId": "{{Your Application Client ID}}",
+    "ClientId": "{{Your Application Client ID}}", // Azure B2C Application Client Id
     "CallbackPath": "/signin-oidc",
     "Domain": "{{Your Azure B2C Domain}}.onmicrosoft.com",
-    "SignUpSignInPolicyId": "{{Your Signup Policy Id}}",
+    "SignUpSignInPolicyId": "B2C_1A_SIGNUP_SIGNIN",
     "ResetPasswordPolicyId": "{{Optional Reset Password policy}}",
     "EditProfilePolicyId": "{{Optional Edit profile policy}}",
-    "TenantId": "common"
+    "B2cExtensionsAppClientId": "{{b2c-extensions-app Client Id}}",
+    "B2cCorsDomain": "{{Your Azure B2C Domain}}.b2clogin.com"
   },
   ...
 }
@@ -72,3 +73,47 @@ Next up, deploy the application to your Azure App Service. We recommend using th
 * [Deploy using Dockerfile](https://learn.microsoft.com/en-us/azure/app-service/tutorial-custom-container?tabs=azure-cli&pivots=container-linux)
 * [Publish using Visual Studio](https://learn.microsoft.com/en-us/azure/app-service/quickstart-dotnetcore?tabs=net70&pivots=development-environment-vs)
 * [Deployment using Azure Pipelines](https://learn.microsoft.com/en-us/azure/app-service/deploy-azure-pipelines?tabs=yaml)
+
+## Power BI Embedded Config & Help
+* [PowerBI REST APIs](https://learn.microsoft.com/en-us/rest/api/power-bi/)
+* [PowerBI Service Principle Profile SDK](https://learn.microsoft.com/en-us/power-bi/developer/embedded/service-principal-profile-sdk)
+* [PowerBI Multi-tenancy](https://learn.microsoft.com/en-us/power-bi/developer/embedded/embed-multi-tenancy)
+
+### 1. Configure Power BI Embedded
+
+#### Create a Power BI Embedded Capacity
+
+1. Sign in to the [Azure portal](https://portal.azure.com/).
+2. Create a new Power BI Embedded resource.
+3. Assign the capacity to your workspace in Power BI.
+
+#### Create Power BI Workspace
+
+1. Sign in to [Power BI](https://app.powerbi.com/).
+2. Create a new workspace for your reports and datasets.
+
+### 2. Set Up Role-Level Security (RLS) in Power BI
+
+This can be done either through the PowerBI Desktop Application, or through the PowerBI REST API's. Once you setup RLS groups for each customer, then you will need to create Service Principal Profiles, and assign each profile to the RLS group. Then in the `CustomerInfo` database, you will need to assign the ProfileId based on the PowerBI config.
+
+### References
+
+For detailed documentation and further API capabilities, visit the [Power BI REST API documentation](https://docs.microsoft.com/en-us/rest/api/power-bi/).
+
+### 3. Integrate Power BI Embedded in the Blazor Server Application
+
+The project already includes a `PbiEmbedService` class in the `AzureB2C.Blazor.Services` namespace.
+
+#### Configure Power BI Embedded in `appsettings.json`
+
+Update your `appsettings.json` file with the necessary Power BI configuration.
+
+```json
+{
+  "PowerBI": {
+    "WorkspaceId": "your-workspace-id",
+    "ReportId": "your-report-id",
+  }
+}
+```
+

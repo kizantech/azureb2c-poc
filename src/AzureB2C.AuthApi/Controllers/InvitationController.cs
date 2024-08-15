@@ -28,8 +28,8 @@ public class InvitationController(IInvitationRepository invitationRepository, IL
             {
                 logger.LogInformation($"- {element.Name}: {element.Value.GetRawText()}");
                 // The element name should be the full extension name as seen by the Graph API (e.g. "extension_appid_InvitationCode").
-                if (element.Name.Equals(
-                        b2cGraphService.GetUserAttributeExtensionName(Constants.UserAttributes.InviteCode),
+                if (element.Name.Equals("extension_" +
+                        Constants.UserAttributes.InviteCode,
                         StringComparison.InvariantCultureIgnoreCase))
                 {
                     invitationCode = element.Value.GetString();
@@ -87,7 +87,7 @@ public class InvitationController(IInvitationRepository invitationRepository, IL
 
     private IActionResult GetBlockPageApiResponse(string code, string userMessage)
     {
-        return GetB2cApiConnectorResponse("ShowBlockPage", code, userMessage, 200, null);
+        return GetB2cApiConnectorResponse("ShowBlockPage", code, userMessage, 400, null);
     }
 
     private IActionResult GetB2cApiConnectorResponse(string action, string code, string userMessage, int statusCode, UserInvitation? userInvitation)
@@ -97,8 +97,8 @@ public class InvitationController(IInvitationRepository invitationRepository, IL
             { "version", "1.0.0" },
             { "action", action },
             { "userMessage", userMessage },
-            { b2cGraphService.GetUserAttributeExtensionName(Constants.UserAttributes.CustomerId), userInvitation?.CustomerId ?? Guid.Empty }, // Note: returning just "extension_<AttributeName>" (without the App ID) would work as well!
-            { b2cGraphService.GetUserAttributeExtensionName(Constants.UserAttributes.DelegatedUserManagementRole), userInvitation?.DelegatedUserManagementRole } // Note: returning just "extension_<AttributeName>" (without the App ID) would work as well!
+            { b2cGraphService.GetUserAttributeClaimName(Constants.UserAttributes.CustomerId), userInvitation?.CustomerId ?? Guid.Empty }, // Note: returning just "extension_<AttributeName>" (without the App ID) would work as well!
+            { b2cGraphService.GetUserAttributeClaimName(Constants.UserAttributes.DelegatedUserManagementRole), userInvitation?.DelegatedUserManagementRole } // Note: returning just "extension_<AttributeName>" (without the App ID) would work as well!
         };
         if (statusCode != 200)
         {

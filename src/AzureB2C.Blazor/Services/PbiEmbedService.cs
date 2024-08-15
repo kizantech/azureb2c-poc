@@ -23,10 +23,10 @@ namespace AzureB2C.Blazor.Services
         private readonly string powerBiApiUrl = "https://api.powerbi.com";
         private readonly CustomerInfo tenantContext;
 
-        public PbiEmbedService(AadService aadService, IMultiTenantContext<CustomerInfo> tenantContext)
+        public PbiEmbedService(AadService aadService, IMultiTenantContextAccessor<CustomerInfo> tenantContext)
         {
             this.aadService = aadService;
-            this.tenantContext = tenantContext.TenantInfo ?? throw new ();
+            this.tenantContext = tenantContext.MultiTenantContext.TenantInfo ?? throw new ();
         }
 
         /// <summary>

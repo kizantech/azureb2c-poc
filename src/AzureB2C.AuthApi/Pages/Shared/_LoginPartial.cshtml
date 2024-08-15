@@ -1,5 +1,12 @@
-﻿@using Microsoft.Extensions.Configuration
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using Microsoft.Extensions.Configuration
+@using Microsoft.Extensions.Options
+@using Microsoft.Identity.Web
 @inject IConfiguration Configuration
+@inject IOptions<MicrosoftIdentityOptions> AzureADB2COptions
+@{
+    var options = AzureADB2COptions.Value;
+}
 
 <ul class="navbar-nav">
     @if (User.Identity.IsAuthenticated)
@@ -7,7 +14,7 @@
         @if (!string.IsNullOrEmpty(Configuration["AzureAdB2C:EditProfilePolicyId"]))
         {
             <li class="nav-item">
-                <a class="nav-link text-dark" asp-area="AzureADB2C" asp-controller="Account" asp-action="EditProfile">
+                <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="EditProfile">
                     <span class="text-dark">Hello @User.Identity.Name!</span>
                 </a>
             </li>
@@ -19,13 +26,13 @@
             </li>
         }
         <li class="nav-item">
-            <a class="nav-link text-dark" asp-area="AzureADB2C" asp-controller="Account" asp-action="SignOut">Sign out</a>
+            <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>
         </li>
     }
     else
     {
         <li class="nav-item">
-            <a class="nav-link text-dark" asp-area="AzureADB2C" asp-controller="Account" asp-action="SignIn">Sign in</a>
+            <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">Sign in</a>
         </li>
     }
 </ul>

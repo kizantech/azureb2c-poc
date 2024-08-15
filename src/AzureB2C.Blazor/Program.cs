@@ -31,8 +31,6 @@ namespace AzureB2C.Blazor
             builder.Services.Configure<AzureAd>(builder.Configuration.GetSection("AzureAd"))
                 .Configure<PowerBI>(builder.Configuration.GetSection("PowerBI"));
 
-            builder.Services.AddScoped(typeof(AadService))
-                .AddScoped(typeof(PbiEmbedService));
             
             builder.Services.AddDbContext<AzureB2cAuthDbContext>(options =>
             {
@@ -51,10 +49,13 @@ namespace AzureB2C.Blazor
             builder.Services.AddCascadingAuthenticationState();
             
             builder.Services.AddMultiTenant<CustomerInfo>()
-                //.WithClaimStrategy(builder.Configuration["ClaimSettings:TenantIdClaimType"])
+                .WithClaimStrategy(builder.Configuration["ClaimSettings:TenantIdClaimType"])
                 .WithStrategy<BlazorUserStrategy>(ServiceLifetime.Scoped, [])
                 .WithEFCoreStore<AzureB2cAuthDbContext, CustomerInfo>();
-            
+
+            builder.Services.AddScoped<AadService>()
+                .AddScoped<PbiEmbedService>();
+
             builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
                 .AddMicrosoftIdentityWebApp(builder.Configuration, "AzureAdB2C");
 

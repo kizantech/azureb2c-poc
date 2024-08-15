@@ -5,9 +5,14 @@ using AzureB2C.AuthApi.Utils;
 using AzureB2C.Data.Context;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.AzureADB2C.UI;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.UI;
+using Constants = AzureB2C.AuthApi.Utils.Constants;
 
 namespace AzureB2C.AuthApi
 {
@@ -47,6 +52,7 @@ namespace AzureB2C.AuthApi
 
                     });
             });
+            services.AddTransient<IClaimsTransformation, CustomClaimsTransformation>();
             services.AddSingleton<B2cGraphService>(b2cGraphService);
 
             services.Configure<ForwardedHeadersOptions>(options =>
@@ -61,21 +67,33 @@ namespace AzureB2C.AuthApi
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
             // Add Azure AD B2C authentication using OpenID Connect.
-            services.AddAuthentication(AzureADB2CDefaults.AuthenticationScheme)
-                .AddAzureADB2C(options => Configuration.Bind("AzureAdB2C", options));
+            services.AddAuthentication(options =>
+                {
+                    options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    options.DefaultSignInScheme = OpenIdConnectDefaults.AuthenticationScheme;
 
-            services.Configure<OpenIdConnectOptions>(AzureADB2CDefaults.OpenIdScheme, options =>
+                })
+                .AddMicrosoftIdentityWebApp(options =>
+                {
+                    Configuration.Bind("AzureAdB2C", options);
+                    options.TokenValidationParameters.RoleClaimType = b2cGraphService.GetUserAttributeClaimName(Constants.UserAttributes.DelegatedUserManagementRole);
+                });
+
+            
+            services.Configure<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme, options =>
             {
                 // Don't remove any incoming claims.
                 options.ClaimActions.Clear();
-
+                options.NonceCookie.SecurePolicy = CookieSecurePolicy.Always;
+                options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
                 // Set the "role" claim type to be the "extension_DelegatedUserManagementRole" user attribute.
                 options.TokenValidationParameters.RoleClaimType = b2cGraphService.GetUserAttributeClaimName(Constants.UserAttributes.DelegatedUserManagementRole);
             });
             #pragma warning restore 0618
 
 
-            services.AddRazorPages();
+            services.AddRazorPages()
+                .AddMicrosoftIdentityUI();
             services.AddControllers();
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
